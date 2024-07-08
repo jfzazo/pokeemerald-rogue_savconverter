@@ -529,13 +529,16 @@ def createMon(ba, version):
     }
     return d
 
-def serializeMon(mon, version):
+def serializeMon(mon, version, newOtId=None):
     """
     Given a pokemon representation, return the associated bytearray for the version
     """
     ba = bytearray(80)
+    if newOtId:
+        mon['key'] = mon['key'] ^ mon['trainer']['id'] ^ newOtId
+        mon['trainer']['id'] = newOtId
     ba[0:4] = struct.pack('<I', mon['personality'])
-    ba[4:8] = struct.pack('<I', mon['trainer']['id'])
+    ba[4:8] = struct.pack('<I', newOtId)
     ba[8:18] = mon['cPkmnName']
     ba[18] = mon['lang']
     ba[19] = mon['EggSpecies']
@@ -549,7 +552,8 @@ def serializeMon(mon, version):
         species     = struct.unpack('<H', mon['type0'][0:2])[0]
         if species > NPOKEMON_V1:
             species += NPOKEMON_V2-NPOKEMON_V1
-        heldItem    = struct.unpack('<H', mon['type0'][2:4])[0]
+        # heldItem    = struct.unpack('<H', mon['type0'][2:4])[0]
+        heldItem    = 0 # The item id does not match between 1.3.2 and 2.0
         experience  = struct.unpack('<I', mon['type0'][4:8])[0]
         mon['type0'][0:4]    = struct.pack('<I', (species&0x7ff)|(heldItem<<11))
         shinyOtherFlags      = struct.unpack('<I', mon['type3'][8:12])[0]
@@ -790,7 +794,7 @@ def processObjects(sectors, tamperObject = None):
                     'box': i+1,
                     'pos': j+1
                 })
-                dataPkmnStor[offset : offset+PKMNBOX_STRUCT_SIZE] = serializeMon(objs['pkmns'][0]['data'], objs['version'])
+                dataPkmnStor[offset : offset+PKMNBOX_STRUCT_SIZE] = serializeMon(objs['pkmns'][0]['data'], objs['version'], trainerId)
                 tamperObject['cloneFirstinParty']=False
             elif tamperObject and len(tamperObject['pkmn'])>tamperObject['lastInsertedPkmn']:
                 objs['pkmns'].append({
@@ -798,7 +802,7 @@ def processObjects(sectors, tamperObject = None):
                     'box': i+1,
                     'pos': j+1
                 })
-                dataPkmnStor[offset : offset+PKMNBOX_STRUCT_SIZE] = serializeMon(tamperObject['pkmn'][tamperObject['lastInsertedPkmn']], objs['version'])
+                dataPkmnStor[offset : offset+PKMNBOX_STRUCT_SIZE] = serializeMon(tamperObject['pkmn'][tamperObject['lastInsertedPkmn']], objs['version'], trainerId)
                 tamperObject['lastInsertedPkmn']+=1
     ## tamper -> modify the money
     if tamperObject and tamperObject['money']>0:
