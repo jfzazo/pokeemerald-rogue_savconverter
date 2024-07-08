@@ -774,7 +774,7 @@ def processObjects(sectors, tamperObject = None):
     for i in range(playerPartyCount):
         # objs['pkmns'].append(bytearray(dataSb1[FIRSTPKMN_OFFSET+i*PKMN_STRUCT_SIZE:FIRSTPKMN_OFFSET+(i+1)*PKMN_STRUCT_SIZE]))
         objs['pkmns'].append({
-            'data': createMon(bytearray(dataSb1[FIRSTPKMN_OFFSET+i*PKMN_STRUCT_SIZE:FIRSTPKMN_OFFSET+(i+1)*PKMNBOX_STRUCT_SIZE]), objs['version']),
+            'data': createMon(bytearray(dataSb1[FIRSTPKMN_OFFSET+i*PKMN_STRUCT_SIZE:FIRSTPKMN_OFFSET+(i+1)*PKMN_STRUCT_SIZE]), objs['version']),
             'box': 0,
             'pos': i+1
         })
